@@ -25,6 +25,7 @@ class DataTransformationConfig:
 
 	preprocessed_train_pth = os.path.join('artifacts', "train_preprocessed.csv")
 	preprocessed_test_pth = os.path.join('artifacts', "test_preprocessed.csv")
+	preprocessed_pred_pth = os.path.join('artifacts', "prediction_preprocessed.csv")
 
 
 	cols_to_drop = ['policy_number','policy_bind_date','policy_state','insured_zip','incident_location',
@@ -121,7 +122,7 @@ class DataTransformation:
 			raise CustomException(e, sys)
 
 
-	def apply_standard_scaler(self, df, is_train=0):
+	def apply_standard_scaler(self, df, is_train=False):
 		try:
 
 			scaler = StandardScaler()
@@ -160,13 +161,13 @@ class DataTransformation:
 		except Exception as e:
 			raise CustomException(e, sys)
 
-	def initiate_data_transformation(self, file_path, is_train=0):
+	def initiate_data_transformation(self, file_path, is_train=False, is_pred=False):
 
 		try:
 			if is_train:
 				logging.info("TRANSFORMATION FOR TRAIN DATA INITIATED")
 			else:
-				logging.info("TRANSFORMATION FOR TEST DATA INITIATED")
+				logging.info("TRANSFORMATION FOR TEST/PRED DATA INITIATED")
 
 			logging.info("==============================================")
 
@@ -207,6 +208,12 @@ class DataTransformation:
 				logging.info("=======================================")
 
 				return self.data_transformation_config.preprocessed_train_pth
+
+			elif is_pred:
+				imputed_df.to_csv(self.data_transformation_config.preprocessed_pred_pth)
+				logging.info("TRANSFORMATION FOR PRED DATA COMPLETED")
+				logging.info("=======================================")
+				return self.data_transformation_config.preprocessed_pred_pth
 
 			else:
 				imputed_df.to_csv(self.data_transformation_config.preprocessed_test_pth)

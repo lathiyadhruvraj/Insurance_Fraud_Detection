@@ -13,7 +13,7 @@ class DataIngestionConfig:
 	train_data_path: str = os.path.join('artifacts', "train.csv")
 	test_data_path: str = os.path.join('artifacts', "test.csv")
 	raw_data_path: str = os.path.join('artifacts', "data.csv")
-
+	insuranceFraud_file_path: str = os.path.join('..', 'Insurance_Fraud_Detection', 'Data', "insuranceFraud.csv")
 
 class DataIngestion:
 	def __init__(self):
@@ -23,7 +23,8 @@ class DataIngestion:
 		logging.info("Entered the data ingestion method or component")
 		try:
 
-			df = pd.read_csv('D:\projects\Insurance_Fraud_Detection\Data\insuranceFraud.csv')
+			# df = pd.read_csv('D:\projects\Insurance_Fraud_Detection\Data\insuranceFraud.csv')
+			df = pd.read_csv(self.ingestion_config.insuranceFraud_file_path)
 			logging.info('Read the dataset as dataframe')
 
 			os.makedirs(os.path.dirname(self.ingestion_config.train_data_path), exist_ok=True)

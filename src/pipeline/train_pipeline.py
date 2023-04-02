@@ -21,10 +21,10 @@ class TrainPipeline:
 			train_data_path, test_data_path = ingest_obj.initiate_data_ingestion()
 
 			train_data_transform = DataTransformation()
-			preprocess_train_path = train_data_transform.initiate_data_transformation(train_data_path, is_train=1)
+			preprocess_train_path = train_data_transform.initiate_data_transformation(train_data_path, is_train=True)
 
 			test_data_transform = DataTransformation()
-			preprocess_test_path = test_data_transform.initiate_data_transformation(test_data_path, is_train=0)
+			preprocess_test_path = test_data_transform.initiate_data_transformation(test_data_path, is_train=False)
 
 			mt = ModelTrainer()
 			roc_auc_score, model_path = mt.initiate_model_trainer(preprocess_train_path, preprocess_test_path)
