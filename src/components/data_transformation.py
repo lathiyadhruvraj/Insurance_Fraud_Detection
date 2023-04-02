@@ -20,8 +20,12 @@ from src.utils import save_object
 @dataclass
 class DataTransformationConfig:
 	std_scaler_pth = os.path.join('artifacts', "std_scaler.pkl")
+
+	imputer_pth = os.path.join('artifacts', "knn_imputer.pkl")
+
 	preprocessed_train_pth = os.path.join('artifacts', "train_preprocessed.csv")
 	preprocessed_test_pth = os.path.join('artifacts', "test_preprocessed.csv")
+
 
 	cols_to_drop = ['policy_number','policy_bind_date','policy_state','insured_zip','incident_location',
 							'incident_date','incident_state','incident_city','insured_hobbies','auto_make',
@@ -108,6 +112,9 @@ class DataTransformation:
 			for col in self.data_transformation_config.dummies_columns:
 				cat_df = pd.get_dummies(cat_df, columns=[col], prefix=[col], drop_first=True)
 
+			df.drop(columns=self.data_transformation_config.dummies_columns, inplace=True)
+
+			cat_df = pd.concat([df, cat_df], axis=1)
 			return cat_df
 
 		except Exception as e:
@@ -118,8 +125,8 @@ class DataTransformation:
 		try:
 
 			scaler = StandardScaler()
-
-			num_df = df.select_dtypes(exclude=['object']).copy()
+			num_df = df[self.data_transformation_config.numerical_columns]
+			# num_df = df.select_dtypes(exclude=['object']).copy()
 			cols = num_df.columns
 			if is_train:
 				scaled_df = scaler.fit_transform(num_df)
@@ -129,11 +136,29 @@ class DataTransformation:
 				scaled_df = scaler.transform(num_df)
 
 			scaled_df = pd.DataFrame(scaled_df, columns=cols)
+
 			return scaled_df
 
 		except Exception as e:
 			raise CustomException(e, sys)
 
+	def apply_KNN_imputer(self, final_df, is_train=0):
+		try:
+			imputer = KNNImputer(n_neighbors=3, missing_values=np.nan)
+
+			cols = final_df.columns
+			if is_train:
+				imputed_df = imputer.fit_transform(final_df)
+				dump(imputer, open(self.data_transformation_config.imputer_pth, 'wb'))
+			else:
+				imputer = load(open(self.data_transformation_config.imputer_pth, 'rb'))
+				imputed_df = imputer.transform(final_df)
+
+			imputed_df = pd.DataFrame(imputed_df, columns=cols)
+
+			return  imputed_df
+		except Exception as e:
+			raise CustomException(e, sys)
 
 	def initiate_data_transformation(self, file_path, is_train=0):
 
@@ -172,12 +197,16 @@ class DataTransformation:
 			final_df = pd.concat([scaled_df, cat_df], axis=1)
 			print("Final df shape", final_df.shape)
 
+			imputed_df = self.apply_KNN_imputer(final_df, is_train)
+			logging.info("KNN imputation Completed")
+			print("after apply_KNN_imputer", imputed_df.shape)
+
 			if is_train:
-				final_df.to_csv(self.data_transformation_config.preprocessed_train_pth)
+				imputed_df.to_csv(self.data_transformation_config.preprocessed_train_pth)
 				logging.info("TRANSFORMATION FOR TRAIN DATA COMPLETED")
 				logging.info("=======================================")
 			else:
-				final_df.to_csv(self.data_transformation_config.preprocessed_test_pth)
+				imputed_df.to_csv(self.data_transformation_config.preprocessed_test_pth)
 				logging.info("TRANSFORMATION FOR TEST DATA COMPLETED")
 				logging.info("=======================================")
 
