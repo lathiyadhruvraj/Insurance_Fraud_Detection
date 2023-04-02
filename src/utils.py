@@ -4,6 +4,8 @@ import sys
 import numpy as np
 import pandas as pd
 import dill
+from src.logger import logging
+
 import pickle
 from sklearn.metrics import roc_auc_score, accuracy_score, f1_score
 from sklearn.model_selection import GridSearchCV
@@ -54,11 +56,9 @@ def evaluate_models(X_train, y_train, X_test, y_test, models, param):
 
             report[list(models.keys())[i]] = test_model_f1_score
 
-            print(model, "  : Train : ", "roc_auc - ", {train_model_roc_auc_score}, "acc - ", {train_model_acc_score},
-                  "f1 - ", {train_model_f1_score})
+            logging.info(f"{model} : Train : roc_auc - {train_model_roc_auc_score}  acc -  {train_model_acc_score} f1 - {train_model_f1_score}")
 
-            print(model, " : Test : ", "roc_auc - ",{test_model_roc_auc_score}, "acc - ",{test_model_acc_score},
-                  "f1 - ",{test_model_f1_score})
+            logging.info(f"{model}  : Test : roc_auc - {test_model_roc_auc_score} acc - {test_model_acc_score} f1 - {test_model_f1_score}")
 
         return report
 

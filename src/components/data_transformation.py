@@ -173,34 +173,34 @@ class DataTransformation:
 
 			df = pd.read_csv(file_path)
 			logging.info("Read of data completed")
-			print("original ", df.shape)
+			logging.info(f"original  shape - {df.shape}")
 
 			df = self.drop_unnecessary_cols(df)
 			logging.info("Deleted unnecessary columns")
-			print("after drop_unnecessary_cols", df.shape)
+			logging.info(f"after drop_unnecessary_cols {df.shape}" )
 
 			df = self.replace_unknown_value_with_nan(df)
 			logging.info("Unknown values replaced with NaN")
-			print("after replace_unknown_value_with_nan", df.shape)
+			logging.info("after replace_unknown_value_with_nan {df.shape}")
 
 			df = self.custom_mapping_for_encoding(df)
 			logging.info("Custom mapping completed")
-			print("after custom_mapping_for_encoding", df.shape)
+			logging.info(f"after custom_mapping_for_encoding {df.shape}")
 
 			cat_df = self.get_dummies_for_cat_val(df)
 			logging.info("Dummies Added")
-			print("after get_dummies_for_cat_val", cat_df.shape)
+			logging.info(f"after get_dummies_for_cat_val {cat_df.shape}")
 
 			scaled_df = self.apply_standard_scaler(df, is_train)
 			logging.info("Standard Scaler Completed")
-			print("after apply_standard_scaler", scaled_df.shape)
+			logging.info(f"after apply_standard_scaler {scaled_df.shape}")
 
 			final_df = pd.concat([scaled_df, cat_df], axis=1)
-			print("Final df shape", final_df.shape)
+			logging.info(f"Final df shape {final_df.shape}")
 
 			imputed_df = self.apply_KNN_imputer(final_df, is_train)
 			logging.info("KNN imputation Completed")
-			print("after apply_KNN_imputer", imputed_df.shape)
+			logging.info(f"after apply_KNN_imputer {imputed_df.shape}")
 
 			if is_train:
 				imputed_df.to_csv(self.data_transformation_config.preprocessed_train_pth)
