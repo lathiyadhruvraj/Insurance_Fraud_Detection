@@ -205,19 +205,20 @@ class DataTransformation:
 				imputed_df.to_csv(self.data_transformation_config.preprocessed_train_pth)
 				logging.info("TRANSFORMATION FOR TRAIN DATA COMPLETED")
 				logging.info("=======================================")
+
+				return self.data_transformation_config.preprocessed_train_pth
+
 			else:
 				imputed_df.to_csv(self.data_transformation_config.preprocessed_test_pth)
 				logging.info("TRANSFORMATION FOR TEST DATA COMPLETED")
 				logging.info("=======================================")
 
+				return self.data_transformation_config.preprocessed_test_pth
+
 		except Exception as e:
 			raise CustomException(e, sys)
 
-if __name__ == "__main__":
-	dt = DataTransformation()
-	train_path = "D:/projects/Insurance_Fraud_Detection/src/components/artifacts/train.csv"
-	test_path = "D:/projects/Insurance_Fraud_Detection/src/components/artifacts/test.csv"
-	dt.initiate_data_transformation(test_path, is_train=0)
+
 
 
 

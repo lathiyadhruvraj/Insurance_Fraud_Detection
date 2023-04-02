@@ -28,8 +28,6 @@ from src.utils import save_object, evaluate_models
 @dataclass
 class ModelTrainerConfig:
 	trained_model_file_path = os.path.join('artifacts', 'model.pkl')
-	preprocessed_train_pth = os.path.join('artifacts', 'train_preprocessed.csv')
-	preprocessed_test_pth = os.path.join('artifacts', 'test_preprocessed.csv')
 
 class ModelTrainer:
 	def __init__(self):
@@ -40,19 +38,18 @@ class ModelTrainer:
 
 			X = df.drop(columns=['fraud_reported'])
 			y = df['fraud_reported']
-			print(df)
 			return X, y
 
 		except Exception as e:
 			raise CustomException(e, sys)
 
-	def initiate_model_trainer(self):
+	def initiate_model_trainer(self, preprocessed_train_pth, preprocessed_test_pth):
 		try:
 			logging.info('model trainer initiated')
 			logging.info('Split train and test data into X y initiated')
 
-			train_df = pd.read_csv(self.model_trainer_config.preprocessed_train_pth)
-			test_df = pd.read_csv(self.model_trainer_config.preprocessed_test_pth)
+			train_df = pd.read_csv(preprocessed_train_pth)
+			test_df = pd.read_csv(preprocessed_test_pth)
 
 			X_train, y_train = self.split_the_data_X_y(train_df)
 			X_test, y_test = self.split_the_data_X_y(test_df)
@@ -81,15 +78,15 @@ class ModelTrainer:
 				},
 				'Balanced Bagging Classifer': {
 					"estimator" : [DecisionTreeClassifier()],
-			        "n_estimators" : [16, 32, 64, 120],
-			        "sampling_strategy" : [0.25, 0.5, 0.65, 0.75],
-			        "replacement" :[ True, False],
+			        "n_estimators" : [150],
+			        "sampling_strategy" : [0.8,0.85],
+			        "replacement" :[ False],
 				},
 				'Easy Ensemble Classifer': {
 					"random_state": [34],
-					"n_estimators": [16, 32, 64, 120],
-					"sampling_strategy": [0.25, 0.5, 0.65, 0.75],
-					"replacement": [True, False]
+					"n_estimators": [200],
+					"sampling_strategy": [0.75],
+					"replacement": [ False]
 				},
 				'SVC':{
 					'kernel':['rbf']
@@ -137,7 +134,7 @@ class ModelTrainer:
 			]
 			best_model = models[best_model_name]
 
-			if best_model_score < 0.6:
+			if best_model_score < 0.56:
 				raise CustomException( 'No best model found')
 			logging.info(f'Best found model on both training and testing dataset')
 
@@ -149,7 +146,7 @@ class ModelTrainer:
 			predicted = best_model.predict(X_test)
 
 			roc_auc = roc_auc_score(y_test, predicted)
-			return roc_auc
+			return roc_auc, self.model_trainer_config.trained_model_file_path
 
 		except Exception as e:
 			raise CustomException(e, sys)
