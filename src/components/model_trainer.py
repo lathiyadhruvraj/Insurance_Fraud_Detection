@@ -28,6 +28,7 @@ from src.utils import save_object, evaluate_models
 @dataclass
 class ModelTrainerConfig:
 	trained_model_file_path = r'D:\projects\Insurance_Fraud_Detection\artifacts\model.pkl'
+	best_model_score_threshold = 0.56
 
 class ModelTrainer:
 	def __init__(self):
@@ -35,12 +36,12 @@ class ModelTrainer:
 
 	def split_the_data_X_y(self, df):
 		try:
-
 			X = df.drop(columns=['fraud_reported'])
 			y = df['fraud_reported']
 			return X, y
 
 		except Exception as e:
+			logging.exception(e)
 			raise CustomException(e, sys)
 
 	def initiate_model_trainer(self, preprocessed_train_pth, preprocessed_test_pth):
@@ -134,9 +135,9 @@ class ModelTrainer:
 			]
 			best_model = models[best_model_name]
 
-			if best_model_score < 0.56:
+			if best_model_score < self.model_trainer_config.best_model_score_threshold:
 				raise CustomException( 'No best model found')
-			logging.info(f'Best found model on both training and testing dataset')
+			logging.info(f'Best model {best_model} found on both training and testing dataset')
 
 			save_object(
 				file_path=self.model_trainer_config.trained_model_file_path,
@@ -149,6 +150,7 @@ class ModelTrainer:
 			return roc_auc, self.model_trainer_config.trained_model_file_path
 
 		except Exception as e:
+			logging.exception(e)
 			raise CustomException(e, sys)
 
 if __name__ == '__main__' :
