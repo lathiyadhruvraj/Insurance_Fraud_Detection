@@ -27,7 +27,7 @@ from src.utils import save_object, evaluate_models
 
 @dataclass
 class ModelTrainerConfig:
-	trained_model_file_path = os.path.join('artifacts', 'model.pkl')
+	trained_model_file_path = r'D:\projects\Insurance_Fraud_Detection\artifacts\model.pkl'
 
 class ModelTrainer:
 	def __init__(self):

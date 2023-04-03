@@ -10,10 +10,10 @@ from dataclasses import dataclass
 
 @dataclass
 class DataIngestionConfig:
-	train_data_path: str = os.path.join('artifacts', "train.csv")
-	test_data_path: str = os.path.join('artifacts', "test.csv")
-	raw_data_path: str = os.path.join('artifacts', "data.csv")
-	insuranceFraud_file_path: str = 'D:\projects\Insurance_Fraud_Detection\Data\insuranceFraud.csv'
+	train_data_path: str = r'D:\projects\Insurance_Fraud_Detection\train.csv'
+	test_data_path: str = r'D:\projects\Insurance_Fraud_Detection\test.csv'
+	raw_data_path: str = r'D:\projects\Insurance_Fraud_Detection\data.csv'
+	insuranceFraud_file_path: str = r'D:\projects\Insurance_Fraud_Detection\Data\insuranceFraud.csv'
 
 class DataIngestion:
 	def __init__(self):

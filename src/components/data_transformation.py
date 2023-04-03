@@ -19,13 +19,13 @@ from src.utils import save_object
 
 @dataclass
 class DataTransformationConfig:
-	std_scaler_pth = os.path.join('artifacts', "std_scaler.pkl")
+	std_scaler_pth = r'D:\projects\Insurance_Fraud_Detection\artifacts\std_scaler.pkl'
 
-	imputer_pth = os.path.join('artifacts', "knn_imputer.pkl")
+	imputer_pth = r'D:\projects\Insurance_Fraud_Detection\artifacts\knn_imputer.pkl'
 
-	preprocessed_train_pth = os.path.join('artifacts', "train_preprocessed.csv")
-	preprocessed_test_pth = os.path.join('artifacts', "test_preprocessed.csv")
-	preprocessed_pred_pth = os.path.join('artifacts', "prediction_preprocessed.csv")
+	preprocessed_train_pth = r'D:\projects\Insurance_Fraud_Detection\artifacts\train_preprocessed.csv'
+	preprocessed_test_pth = r'D:\projects\Insurance_Fraud_Detection\artifacts\test_preprocessed.csv'
+	preprocessed_pred_pth = r'D:\projects\Insurance_Fraud_Detection\artifacts\prediction_preprocessed.csv'
 
 
 	cols_to_drop = ['policy_number','policy_bind_date','policy_state','insured_zip','incident_location',
@@ -143,7 +143,7 @@ class DataTransformation:
 		except Exception as e:
 			raise CustomException(e, sys)
 
-	def apply_KNN_imputer(self, final_df, is_train=0):
+	def apply_KNN_imputer(self, final_df, is_train=False):
 		try:
 			imputer = KNNImputer(n_neighbors=3, missing_values=np.nan)
 
@@ -181,7 +181,7 @@ class DataTransformation:
 
 			df = self.replace_unknown_value_with_nan(df)
 			logging.info("Unknown values replaced with NaN")
-			logging.info("after replace_unknown_value_with_nan {df.shape}")
+			logging.info(f"after replace_unknown_value_with_nan {df.shape}")
 
 			df = self.custom_mapping_for_encoding(df)
 			logging.info("Custom mapping completed")
@@ -223,6 +223,7 @@ class DataTransformation:
 				return self.data_transformation_config.preprocessed_test_pth
 
 		except Exception as e:
+			logging.exception(e)
 			raise CustomException(e, sys)
 
 
