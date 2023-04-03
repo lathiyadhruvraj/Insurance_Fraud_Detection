@@ -1,9 +1,6 @@
 import os
 import sys
 
-import numpy as np
-import pandas as pd
-import dill
 from src.logger import logging
 
 import pickle
@@ -22,6 +19,7 @@ def save_object(file_path, obj):
             pickle.dump(obj, file_obj)
 
     except Exception as e:
+        logging.exception(e)
         raise CustomException(e, sys)
 
 
@@ -63,6 +61,7 @@ def evaluate_models(X_train, y_train, X_test, y_test, models, param):
         return report
 
     except Exception as e:
+        logging.exception(e)
         raise CustomException(e, sys)
 
 
@@ -72,4 +71,5 @@ def load_object(file_path):
             return pickle.load(file_obj)
 
     except Exception as e:
+        logging.exception(e)
         raise CustomException(e, sys)
