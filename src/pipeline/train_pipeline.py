@@ -42,6 +42,7 @@ class TrainPipeline:
 			print("---------------------- Train Pipeline Finished --------------------------")
 
 		except Exception as e:
+			logging.exception(e)
 			raise CustomException(e, sys)
 
 if __name__ == "__main__":
