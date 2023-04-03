@@ -5,7 +5,6 @@ from src.components.model_trainer import ModelTrainer
 from src.exception import CustomException
 from src.logger import logging
 
-import os
 import sys
 
 

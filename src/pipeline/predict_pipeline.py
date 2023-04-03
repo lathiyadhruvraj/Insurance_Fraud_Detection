@@ -29,6 +29,7 @@ class PredictPipeline:
 			loaded_model = pickle.load(open(self.model.model_path, 'rb'))
 
 			pred_file = pd.read_csv(preprocessed_predict_file_path)
+			pred_file.drop(columns=['fraud_reported'], inplace=True)
 			result = loaded_model.predict(pred_file)
 
 			logging.info("Prediction from model.pkl completed")
