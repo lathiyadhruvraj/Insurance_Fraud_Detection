@@ -27,6 +27,7 @@ class DataTransformationConfig:
 	preprocessed_test_pth = r'D:\projects\Insurance_Fraud_Detection\artifacts\test_preprocessed.csv'
 	preprocessed_pred_pth = r'D:\projects\Insurance_Fraud_Detection\artifacts\prediction_preprocessed.csv'
 
+	knn_n_nbrs = 3
 
 	cols_to_drop = ['policy_number','policy_bind_date','policy_state','insured_zip','incident_location',
 							'incident_date','incident_state','incident_city','insured_hobbies','auto_make',
@@ -59,6 +60,7 @@ class DataTransformation:
 			return df
 
 		except Exception as e:
+			logging.exception(e)
 			raise CustomException(e, sys)
 
 	def replace_unknown_value_with_nan(self, df):
@@ -75,6 +77,7 @@ class DataTransformation:
 			return df
 
 		except Exception as e:
+			logging.exception(e)
 			raise CustomException(e, sys)
 
 	def custom_mapping_for_encoding(self, df):
@@ -98,6 +101,7 @@ class DataTransformation:
 			return df
 
 		except Exception as e:
+			logging.exception(e)
 			raise CustomException(e, sys)
 
 	def get_dummies_for_cat_val(self, df):
@@ -119,10 +123,16 @@ class DataTransformation:
 			return cat_df
 
 		except Exception as e:
+			logging.exception(e)
 			raise CustomException(e, sys)
 
 
 	def apply_standard_scaler(self, df, is_train=False):
+		"""
+		:param df:  Standard Scaling the input df
+		:param is_train: If True fit transform the train file , If false - transform the test/predict file
+		:return: scaled df
+		"""
 		try:
 
 			scaler = StandardScaler()
@@ -132,37 +142,54 @@ class DataTransformation:
 			if is_train:
 				scaled_df = scaler.fit_transform(num_df)
 				dump(scaler, open(self.data_transformation_config.std_scaler_pth, 'wb'))
+				logging.info("standard scaler object dumped after fit_transform")
 			else:
 				scaler = load(open(self.data_transformation_config.std_scaler_pth, 'rb'))
 				scaled_df = scaler.transform(num_df)
+				logging.info("standard scaler object loaded for transform df")
 
 			scaled_df = pd.DataFrame(scaled_df, columns=cols)
 
 			return scaled_df
 
 		except Exception as e:
+			logging.exception(e)
 			raise CustomException(e, sys)
 
 	def apply_KNN_imputer(self, final_df, is_train=False):
+		"""
+		:param final_df: KNN imputation for missing data in categorical column
+		:param is_train: If True fit transform the train file , If false - transform the test/predict file
+		:return: imputed_df
+		"""
 		try:
-			imputer = KNNImputer(n_neighbors=3, missing_values=np.nan)
+			imputer = KNNImputer(n_neighbors=self.data_transformation_config.knn_n_nbrs, missing_values=np.nan)
 
 			cols = final_df.columns
 			if is_train:
 				imputed_df = imputer.fit_transform(final_df)
 				dump(imputer, open(self.data_transformation_config.imputer_pth, 'wb'))
+				logging.info("KNN Imputer object dumped after fit_transform")
 			else:
 				imputer = load(open(self.data_transformation_config.imputer_pth, 'rb'))
 				imputed_df = imputer.transform(final_df)
+				logging.info("KNN Imputer object loaded for transform df")
 
 			imputed_df = pd.DataFrame(imputed_df, columns=cols)
 
 			return  imputed_df
+
 		except Exception as e:
+			logging.exception(e)
 			raise CustomException(e, sys)
 
 	def initiate_data_transformation(self, file_path, is_train=False, is_pred=False):
-
+		"""
+		:param file_path: handles methods of Data Tansformation Class
+		:param is_train: If True fit transform the train file , If false - transform the test/predict file
+		:param is_pred: for identifying between test file and predict file
+		:return: path to preprocessed file
+		"""
 		try:
 			if is_train:
 				logging.info("TRANSFORMATION FOR TRAIN DATA INITIATED")
@@ -225,57 +252,3 @@ class DataTransformation:
 		except Exception as e:
 			logging.exception(e)
 			raise CustomException(e, sys)
-
-
-
-
-
-# IMPLEMENT THIS PIPELINE LATER ON (ERROR: Specifying the columns using strings is only supported for pandas DataFrames)
-# GO WITH NORMAL METHOD
-
-# def get_data_transformer_object(self):
-# 	"""
-# 	This function is  for data transformation
-#
-# 	"""
-# 	try:
-#
-# 		numerical_columns = ['months_as_customer', 'policy_deductable', 'umbrella_limit',
-# 	       'capital-gains', 'capital-loss', 'incident_hour_of_the_day',
-# 	       'number_of_vehicles_involved', 'bodily_injuries', 'witnesses', 'injury_claim', 'property_claim',
-# 	       'vehicle_claim']
-#
-# 		categorical_columns = ['insured_occupation', 'insured_relationship', 'incident_type', 'collision_type',
-# 			'authorities_contacted']
-#
-#
-# 		num_pipeline = Pipeline(
-# 			steps=[
-# 				("scaler", StandardScaler())
-# 			]
-# 		)
-#
-# 		cat_pipeline = Pipeline(
-# 			steps=[
-# 				("one_hot_encoder", OneHotEncoder()),
-# 				("imputer", KNNImputer(n_neighbors=3, missing_values=np.nan)),
-# 			]
-# 		)
-#
-#
-# 		logging.info(f"Categorical columns: {categorical_columns}")
-# 		logging.info(f"Numerical columns: {numerical_columns}")
-#
-# 		preprocessor = ColumnTransformer(
-# 			[
-# 				("num_pipeline", num_pipeline, numerical_columns),
-# 				("cat_pipelines", cat_pipeline, categorical_columns)
-#
-# 			]
-#
-# 		)
-#
-# 		return preprocessor
-#
-# 	except Exception as e:
-# 		raise CustomException(e, sys)

@@ -10,20 +10,21 @@ from dataclasses import dataclass
 
 @dataclass
 class DataIngestionConfig:
-	train_data_path: str = r'D:\projects\Insurance_Fraud_Detection\train.csv'
-	test_data_path: str = r'D:\projects\Insurance_Fraud_Detection\test.csv'
-	raw_data_path: str = r'D:\projects\Insurance_Fraud_Detection\data.csv'
+	train_data_path: str = r'D:\projects\Insurance_Fraud_Detection\artifacts\train.csv'
+	test_data_path: str = r'D:\projects\Insurance_Fraud_Detection\artifacts\test.csv'
+	raw_data_path: str = r'D:\projects\Insurance_Fraud_Detection\artifacts\data.csv'
 	insuranceFraud_file_path: str = r'D:\projects\Insurance_Fraud_Detection\Data\insuranceFraud.csv'
+	random_state = 42
+	test_size = 0.25
 
 class DataIngestion:
 	def __init__(self):
 		self.ingestion_config = DataIngestionConfig()
 
 	def initiate_data_ingestion(self):
-		logging.info("Entered the data ingestion method or component")
 		try:
+			logging.info("Entered the data ingestion method or component")
 
-			# df = pd.read_csv('D:\projects\Insurance_Fraud_Detection\Data\insuranceFraud.csv')
 			df = pd.read_csv(self.ingestion_config.insuranceFraud_file_path)
 			logging.info('Read the dataset as dataframe')
 
@@ -33,7 +34,8 @@ class DataIngestion:
 
 			logging.info("Train test split initiated")
 
-			train_set, test_set = train_test_split(df, test_size=0.2, random_state=42)
+			train_set, test_set = train_test_split(df, test_size=self.ingestion_config.test_size,
+			                                       random_state=self.ingestion_config.random_state)
 
 			train_set.to_csv(self.ingestion_config.train_data_path, index=False, header=True)
 			test_set.to_csv(self.ingestion_config.test_data_path, index=False, header=True)
@@ -46,6 +48,7 @@ class DataIngestion:
 			)
 
 		except Exception as e:
+			logging.exception(e)
 			raise CustomException(e, sys)
 
 
