@@ -60,7 +60,7 @@ class Streamlit:
     # Contents on Page
     def content_on_page(self):
         try:
-            st.title(f"{self.streamlit_config.title} \n")
+            st.title(f"{self.streamlit_config.title}  \n")
 
             col1, col2 = st.columns(2)
             choice = col1.radio(("Choose From Below Options: "), ["Show Available Files", "Upload Own File Here"])
@@ -71,16 +71,9 @@ class Streamlit:
 
                 chosen_file = col2.radio("\n Choose From Below Options: ", list_file_dir)
 
-                st.subheader(f"PREDICTION OF {chosen_file}")
+                st.subheader(f"PREDICTED --- :orange[{chosen_file}]")
 
                 pred_file_path = os.path.join(self.streamlit_config.files_dir, chosen_file)
-
-                st.download_button(
-                    label=f"Download {chosen_file} as CSV",
-                    data=pred_file_path,
-                    file_name='large_df.csv',
-                    mime='text/csv',
-                )
 
                 pred = PredictPipeline()
                 res = pred.initiate_predict_pipeline(pred_file_path)
