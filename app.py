@@ -6,9 +6,15 @@ import shutil
 # from predict.check_files import main
 # import yaml
 import sys
-import pickle
+
 from src.exception import CustomException
 from src.logger import logging
+from src.pipeline.predict_pipeline import PredictPipeline
+
+
+
+
+
 
 # Necessary args to parse from predict.yaml
 # args = argparse.ArgumentParser()
@@ -30,8 +36,6 @@ from src.logger import logging
 # model_name = [ model for model in os.listdir(model_dir) if model[-4:] == ".sav" ]
 # model_path = os.path.join(model_dir, model_name[0])
 
-model_path = os.path.join(os.getcwd(), "src", "components", "artifacts", "model.pkl")
-loaded_model = pickle.load(open(model_path, 'rb'))
 # pred_file_dir = config['predict']['valid_and_preprocess']['preprocessed_files']
 
 # Setting Background for Streamlit
@@ -70,31 +74,46 @@ st.title("Insurance Fraud Detection \n")
 col1, col2 = st.columns(2)
 choice = col1.radio (("Choose From Below Options: "), ["Show Available Files", "Upload Own File Here"])
 
-save_file_path = os.path.join(os.getcwd(), "src", "components", "artifacts")
-files_dir = os.path.join(os.getcwd(), "src", "components", "artifacts", "predict_files")
+save_file_path = os.path.join(os.getcwd(), "artifacts")
+files_dir = os.path.join(os.getcwd(), "artifacts", "predict_files")
 
 try:
     if choice == "Show Available Files":
 
         list_file_dir = os.listdir(files_dir)
-        chosen_file = col2.radio ("\n Choose From Below Options: ", files_dir)
+
+        chosen_file = col2.radio("\n Choose From Below Options: ", list_file_dir)
 
         st.subheader(f"PREDICTION OF {chosen_file}")
 
+
         pred_file_path = os.path.join(files_dir, chosen_file)
-        shutil.copy(pred_file_path, save_file_path)
 
-        # status, e = main()
 
-        pred_preprocessed = os.path.join(pred_file_path, "predict_file.csv")
-        pred_file = pd.read_csv(pred_preprocessed)
-        result = loaded_model.predict(pred_file)
+        # @st.cache
+        # def convert_df(df):
+        #     # IMPORTANT: Cache the conversion to prevent computation on every rerun
+        #     return df.to_csv().encode('utf-8')
+        #
+        #
+        # csv = convert_df(my_large_df)
 
-        df = pd.DataFrame(result)
-        df = df.replace(0, "Fraud Not Reported")
-        df = df.replace(1, "Fraud Reported")
+        st.download_button(
+            label=f"Download {chosen_file} as CSV",
+            data=pred_file_path,
+            file_name='large_df.csv',
+            mime='text/csv',
+        )
 
-        st.write(df)
+        pred = PredictPipeline()
+        res = pred.initiate_predict_pipeline(pred_file_path)
+
+        st.write(res)
+
+    if choice == "Upload Own File Here":
+        st.write("Coming Soon ...")
+
+
 except Exception as e:
     raise CustomException(e, sys)
     
