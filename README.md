@@ -7,7 +7,9 @@ Insurance Fraud Detection Project
 
 #### different predicted files screenshots -
 ---------------------------------------------------------------------------------------------
-<img src="imgs\w1.PNG" alt="w1" width="50%"><img src="imgs\w2.PNG" alt="w2" width="50%">
+<img src="imgs\w1.PNG" alt="w1" width="70%">
+
+<img src="imgs\w2.PNG" alt="w2" width="70%">
 
 
 
