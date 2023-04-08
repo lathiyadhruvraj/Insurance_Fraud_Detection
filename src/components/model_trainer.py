@@ -2,7 +2,7 @@ import os
 import sys
 from dataclasses import dataclass
 import pandas as pd
-
+from pathlib import Path
 from catboost import CatBoostClassifier
 from sklearn.ensemble import (
 	AdaBoostClassifier,
@@ -25,14 +25,11 @@ from src.logger import logging
 from src.utils import save_object, evaluate_models
 
 
-@dataclass
-class ModelTrainerConfig:
-	trained_model_file_path = r'D:\projects\Insurance_Fraud_Detection\artifacts\model.pkl'
-	best_model_score_threshold = 0.56
-
 class ModelTrainer:
-	def __init__(self):
-		self.model_trainer_config = ModelTrainerConfig()
+	def __init__(self, config, paths):
+		self.config = config
+		self.paths = paths
+
 
 	def split_the_data_X_y(self, df):
 		try:
@@ -135,24 +132,29 @@ class ModelTrainer:
 			]
 			best_model = models[best_model_name]
 
-			if best_model_score < self.model_trainer_config.best_model_score_threshold:
+			if best_model_score < self.config['model_trainer']['best_model_score_threshold']:
 				raise CustomException( 'No best model found')
 			logging.info(f'Best model {best_model} found on both training and testing dataset')
 
+			root = str(Path(os.getcwd()).parents[1])
+			artifacts_dir = self.paths['artifacts_dir']
+			trained_model_fname = self.paths['model_trainer']['trained_model_fname']
+			trained_model_path = os.path.join(root, artifacts_dir, trained_model_fname)
+
 			save_object(
-				file_path=self.model_trainer_config.trained_model_file_path,
+				file_path=trained_model_path,
 				obj=best_model
 			)
 
 			predicted = best_model.predict(X_test)
 
 			roc_auc = roc_auc_score(y_test, predicted)
-			return roc_auc, self.model_trainer_config.trained_model_file_path
+			return roc_auc, trained_model_path
 
 		except Exception as e:
 			logging.exception(e)
 			raise CustomException(e, sys)
 
-if __name__ == '__main__' :
-	trner = ModelTrainer()
-	trner.initiate_model_trainer()
+# if __name__ == '__main__' :
+# 	trner = ModelTrainer()
+# 	trner.initiate_model_trainer()

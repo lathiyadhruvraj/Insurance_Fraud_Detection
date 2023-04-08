@@ -1,0 +1,14 @@
+home: Insurance_Fraud_Detection
+
+artifacts:
+  artifacts_dir : artifacts
+
+data_ingestion:
+  ttsplit_test_size : 0.25
+  ttsplit_random_state: 42
+
+data_transformation:
+  knn_n_nbrs : 3
+
+model_trainer:
+  best_model_score_threshold : 0.56

@@ -1,7 +1,8 @@
 import sys
 from dataclasses import dataclass
 from pickle import dump, load
-
+import os
+from pathlib import Path
 import numpy as np
 import pandas as pd
 
@@ -13,17 +14,8 @@ from src.exception import CustomException
 from src.logger import logging
 
 
-@dataclass
+@dataclass(frozen=True)
 class DataTransformationConfig:
-	std_scaler_pth = r'D:\projects\Insurance_Fraud_Detection\artifacts\std_scaler.pkl'
-
-	imputer_pth = r'D:\projects\Insurance_Fraud_Detection\artifacts\knn_imputer.pkl'
-
-	preprocessed_train_pth = r'D:\projects\Insurance_Fraud_Detection\artifacts\train_preprocessed.csv'
-	preprocessed_test_pth = r'D:\projects\Insurance_Fraud_Detection\artifacts\test_preprocessed.csv'
-	preprocessed_pred_pth = r'D:\projects\Insurance_Fraud_Detection\artifacts\prediction_preprocessed.csv'
-
-	knn_n_nbrs = 3
 
 	cols_to_drop = ['policy_number','policy_bind_date','policy_state','insured_zip','incident_location',
 							'incident_date','incident_state','incident_city','insured_hobbies','auto_make',
@@ -42,7 +34,9 @@ class DataTransformationConfig:
 	                     'vehicle_claim']
 
 class DataTransformation:
-	def __init__(self):
+	def __init__(self, config, paths):
+		self.config = config
+		self.paths = paths
 		self.data_transformation_config = DataTransformationConfig()
 
 	def drop_unnecessary_cols(self, df):
@@ -123,7 +117,7 @@ class DataTransformation:
 			raise CustomException(e, sys)
 
 
-	def apply_standard_scaler(self, df, is_train=False):
+	def apply_standard_scaler(self, df, root, is_train=False):
 		"""
 		:param df:  Standard Scaling the input df
 		:param is_train: If True fit transform the train file , If false - transform the test/predict file
@@ -133,14 +127,18 @@ class DataTransformation:
 
 			scaler = StandardScaler()
 			num_df = df[self.data_transformation_config.numerical_columns]
+
+			artifacts_dir = self.paths['artifacts_dir']
+			std_scaler_pkl = self.paths['data_transformation']['std_scaler_fname']
+			std_scaler_pkl_path = os.path.join(root, artifacts_dir, std_scaler_pkl)
 			# num_df = df.select_dtypes(exclude=['object']).copy()
 			cols = num_df.columns
 			if is_train:
 				scaled_df = scaler.fit_transform(num_df)
-				dump(scaler, open(self.data_transformation_config.std_scaler_pth, 'wb'))
+				dump(scaler, open(std_scaler_pkl_path, 'wb'))
 				logging.info("standard scaler object dumped after fit_transform")
 			else:
-				scaler = load(open(self.data_transformation_config.std_scaler_pth, 'rb'))
+				scaler = load(open(std_scaler_pkl_path, 'rb'))
 				scaled_df = scaler.transform(num_df)
 				logging.info("standard scaler object loaded for transform df")
 
@@ -152,22 +150,26 @@ class DataTransformation:
 			logging.exception(e)
 			raise CustomException(e, sys)
 
-	def apply_KNN_imputer(self, final_df, is_train=False):
+	def apply_KNN_imputer(self, final_df, root, is_train=False):
 		"""
 		:param final_df: KNN imputation for missing data in categorical column
 		:param is_train: If True fit transform the train file , If false - transform the test/predict file
 		:return: imputed_df
 		"""
 		try:
-			imputer = KNNImputer(n_neighbors=self.data_transformation_config.knn_n_nbrs, missing_values=np.nan)
+			imputer = KNNImputer(n_neighbors=self.config['data_transformation']['knn_n_nbrs'], missing_values=np.nan)
 
 			cols = final_df.columns
+			artifacts_dir = self.paths['artifacts_dir']
+			knn_imputer_pkl = self.paths['data_transformation']['knn_imputer_fname']
+			knn_imputer_pkl_path = os.path.join(root, artifacts_dir, knn_imputer_pkl)
+
 			if is_train:
 				imputed_df = imputer.fit_transform(final_df)
-				dump(imputer, open(self.data_transformation_config.imputer_pth, 'wb'))
+				dump(imputer, open(knn_imputer_pkl_path, 'wb'))
 				logging.info("KNN Imputer object dumped after fit_transform")
 			else:
-				imputer = load(open(self.data_transformation_config.imputer_pth, 'rb'))
+				imputer = load(open(knn_imputer_pkl_path, 'rb'))
 				imputed_df = imputer.transform(final_df)
 				logging.info("KNN Imputer object loaded for transform df")
 
@@ -194,6 +196,8 @@ class DataTransformation:
 
 			logging.info("==============================================")
 
+			root = str(Path(os.getcwd()).parents[1])
+
 			df = pd.read_csv(file_path)
 			logging.info("Read of data completed")
 			logging.info(f"original  shape - {df.shape}")
@@ -214,36 +218,39 @@ class DataTransformation:
 			logging.info("Dummies Added")
 			logging.info(f"after get_dummies_for_cat_val {cat_df.shape}")
 
-			scaled_df = self.apply_standard_scaler(df, is_train)
+			scaled_df = self.apply_standard_scaler(df, root, is_train)
 			logging.info("Standard Scaler Completed")
 			logging.info(f"after apply_standard_scaler {scaled_df.shape}")
 
 			final_df = pd.concat([scaled_df, cat_df], axis=1)
 			logging.info(f"Final df shape {final_df.shape}")
 
-			imputed_df = self.apply_KNN_imputer(final_df, is_train)
+			imputed_df = self.apply_KNN_imputer(final_df, root, is_train)
 			logging.info("KNN imputation Completed")
 			logging.info(f"after apply_KNN_imputer {imputed_df.shape}")
 
 			if is_train:
-				imputed_df.to_csv(self.data_transformation_config.preprocessed_train_pth)
+				preprocessed_train_pth = self.paths['data_transformation']['preprocessed_train_fname']
+				imputed_df.to_csv()
 				logging.info("TRANSFORMATION FOR TRAIN DATA COMPLETED")
 				logging.info("=======================================")
 
-				return self.data_transformation_config.preprocessed_train_pth
+				return preprocessed_train_pth
 
 			elif is_pred:
-				imputed_df.to_csv(self.data_transformation_config.preprocessed_pred_pth)
+				preprocessed_pred_pth = self.paths['data_transformation']['preprocessed_pred_fname']
+				imputed_df.to_csv(preprocessed_pred_pth)
 				logging.info("TRANSFORMATION FOR PRED DATA COMPLETED")
 				logging.info("=======================================")
-				return self.data_transformation_config.preprocessed_pred_pth
+				return preprocessed_pred_pth
 
 			else:
-				imputed_df.to_csv(self.data_transformation_config.preprocessed_test_pth)
+				preprocessed_test_pth = self.paths['data_transformation']['preprocessed_test_fname']
+				imputed_df.to_csv(preprocessed_test_pth)
 				logging.info("TRANSFORMATION FOR TEST DATA COMPLETED")
 				logging.info("=======================================")
 
-				return self.data_transformation_config.preprocessed_test_pth
+				return preprocessed_test_pth
 
 		except Exception as e:
 			logging.exception(e)
