@@ -8,6 +8,24 @@ from sklearn.metrics import roc_auc_score, accuracy_score, f1_score
 from sklearn.model_selection import GridSearchCV
 
 from src.exception import CustomException
+import pandas as pd
+
+def read_raw_data(file_path):
+    """
+    Reads the raw data file and returns it as a pandas dataframe.
+    """
+    with open(file_path) as f:
+        df = pd.read_csv(f)
+
+    return df
+
+def write_raw_data(df, file_path):
+    """
+    Writes the raw data dataframe to a CSV file.
+    """
+    with open(file_path, 'w') as f:
+        df.to_csv(f, index=False, header=True)
+
 
 def save_object(file_path, obj):
     try:

@@ -1,20 +1,13 @@
 import os
 import sys
-from dataclasses import dataclass
+
 import pandas as pd
 from pathlib import Path
-from catboost import CatBoostClassifier
-from sklearn.ensemble import (
-	AdaBoostClassifier,
-	GradientBoostingClassifier,
-	RandomForestClassifier,
-)
 
-from sklearn.svm import SVC
+
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score
-from sklearn.neighbors import KNeighborsClassifier
+
 from sklearn.tree import DecisionTreeClassifier
-from xgboost import XGBClassifier
 from imblearn.ensemble import BalancedRandomForestClassifier
 from imblearn.ensemble import BalancedBaggingClassifier
 from imblearn.ensemble import EasyEnsembleClassifier
@@ -23,23 +16,19 @@ from src.exception import CustomException
 from src.logger import logging
 
 from src.utils import save_object, evaluate_models
-
+from cfg.config import Config
+from cfg.paths import Paths
 
 class ModelTrainer:
-	def __init__(self, config, paths):
-		self.config = config
-		self.paths = paths
-
+	def __init__(self):
+		self.config = Config()
+		self.paths = Paths()
+		self.root = Path(__file__).parent.parent.parent.resolve()
 
 	def split_the_data_X_y(self, df):
-		try:
-			X = df.drop(columns=['fraud_reported'])
-			y = df['fraud_reported']
-			return X, y
-
-		except Exception as e:
-			logging.exception(e)
-			raise CustomException(e, sys)
+		X = df.drop(columns=['fraud_reported_Y'])
+		y = df['fraud_reported_Y']
+		return X, y
 
 	def initiate_model_trainer(self, preprocessed_train_pth, preprocessed_test_pth):
 		try:
@@ -48,76 +37,43 @@ class ModelTrainer:
 
 			train_df = pd.read_csv(preprocessed_train_pth)
 			test_df = pd.read_csv(preprocessed_test_pth)
-
+			print(train_df.columns)
 			X_train, y_train = self.split_the_data_X_y(train_df)
 			X_test, y_test = self.split_the_data_X_y(test_df)
 
 			logging.info('Split train and test data into X y completed')
 
-
 			models = {
-				# 'SVC' : SVC(),
-				# 'Random Forest Classifier': RandomForestClassifier(),
 				# 'Balanced RFC' : BalancedRandomForestClassifier(),
-				'Balanced Bagging Classifer': BalancedBaggingClassifier(),
-				'Easy Ensemble Classifer' : EasyEnsembleClassifier(),
-				# 'Decision Tree Classifier': DecisionTreeClassifier(),
-				# 'Gradient Boosting Classifier': GradientBoostingClassifier(),
-				# 'XGBClassifier': XGBClassifier(),
-				# 'CatBoosting Classifier': CatBoostClassifier(verbose=False),
-				# 'AdaBoost Classifier': AdaBoostClassifier(),
-			}
-			params = {
-				'Balanced RFC' : {
-					"random_state": [42],
-					"n_estimators": [100, 200, 300, 400],
-					"max_depth": [1, 2, 3, 4],
-
-				},
-				'Balanced Bagging Classifer': {
-					"estimator" : [DecisionTreeClassifier()],
-			        "n_estimators" : [150],
-			        "sampling_strategy" : [0.8,0.85],
-			        "replacement" :[ False],
-				},
-				'Easy Ensemble Classifer': {
-					"random_state": [34],
-					"n_estimators": [200],
-					"sampling_strategy": [0.75],
-					"replacement": [ False]
-				},
-				'SVC':{
-					'kernel':['rbf']
-				},
-				'Decision Tree Classifier': {
-					'criterion': ['log_loss', 'entropy', 'gini'],
-					'splitter':['best','random'],
-					'max_depth' : [2, 3, 4],
-				},
-				'Random Forest Classifier': {
-					'max_depth' : [2, 3, 4],
-					'n_estimators': [ 8, 16, 32, 64]
-				},
-				'Gradient Boosting Classifier': {
-					'subsample': [0.6, 0.65, 0.7, 0.75],
-					'n_estimators': [16, 32, 64, 128],
-					'max_depth': [2, 3, 4]
-				},
-				'XGBClassifier':{
-
-					'max_depth': [2, 3]
-				},
-				'CatBoosting Classifier': {
-					'learning_rate': [0.01, 0.05, 0.1],
-					'iterations': [30, 50, 100],
-					'max_depth': [2, 3, 4, 6, 8, 10]
-				},
-				'AdaBoost Classifier': {
-					'learning_rate': [.1, .01, 0.5, .001],
-					'n_estimators': [8, 16, 32, 64, 128]
-				}
+				'Balanced Bagging Classifer': BalancedBaggingClassifier(estimator=DecisionTreeClassifier()),
+				'Easy Ensemble Classifer': EasyEnsembleClassifier(),
 
 			}
+			params = [
+				self.config.model_trainer.Params('Balanced RFC', [42], [100, 200, 300, 400], [1, 2, 3, 4], [], []),
+				self.config.model_trainer.Params('Balanced Bagging Classifer', [], [150], [], [0.8, 0.85], [False]),
+				self.config.model_trainer.Params('Easy Ensemble Classifer', [34], [200], [], [0.75], [False]),
+			]
+			# params = {
+			# 	'Balanced RFC' : {
+			# 		"random_state": [42],
+			# 		"n_estimators": [100, 200, 300, 400],
+			# 		"max_depth": [1, 2, 3, 4],
+			#
+			# 	},
+			# 	'Balanced Bagging Classifer': {
+			#         "n_estimators" : [150],
+			#         "sampling_strategy" : [0.8,0.85],
+			#         "replacement" :[ False],
+			# 	},
+			# 	'Easy Ensemble Classifer': {
+			# 		"random_state": [34],
+			# 		"n_estimators": [200],
+			# 		"sampling_strategy": [0.75],
+			# 		"replacement": [ False]
+			#
+			# 	}
+			# }
 
 			model_report: dict = evaluate_models(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test,
 			                                     models=models, param=params)
@@ -132,14 +88,14 @@ class ModelTrainer:
 			]
 			best_model = models[best_model_name]
 
-			if best_model_score < self.config['model_trainer']['best_model_score_threshold']:
+			if best_model_score < self.config.model_trainer.best_model_score_threshold:
 				raise CustomException( 'No best model found')
 			logging.info(f'Best model {best_model} found on both training and testing dataset')
 
-			root = str(Path(os.getcwd()).parents[1])
-			artifacts_dir = self.paths['artifacts_dir']
-			trained_model_fname = self.paths['model_trainer']['trained_model_fname']
-			trained_model_path = os.path.join(root, artifacts_dir, trained_model_fname)
+
+			artifacts_dir = self.paths.artifacts_dir
+			trained_model_fname = self.paths.model_trainer.trained_model_fname
+			trained_model_path = self.root / artifacts_dir / trained_model_fname
 
 			save_object(
 				file_path=trained_model_path,

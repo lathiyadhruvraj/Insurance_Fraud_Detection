@@ -1,7 +1,6 @@
 home: Insurance_Fraud_Detection
 
-artifacts:
-  artifacts_dir : artifacts
+artifacts_dir : artifacts
 
 data_ingestion:
   ttsplit_test_size : 0.25
