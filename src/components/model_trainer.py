@@ -37,7 +37,7 @@ class ModelTrainer:
 
 			train_df = pd.read_csv(preprocessed_train_pth)
 			test_df = pd.read_csv(preprocessed_test_pth)
-			print(train_df.columns)
+
 			X_train, y_train = self.split_the_data_X_y(train_df)
 			X_test, y_test = self.split_the_data_X_y(test_df)
 
@@ -49,34 +49,34 @@ class ModelTrainer:
 				'Easy Ensemble Classifer': EasyEnsembleClassifier(),
 
 			}
-			params = [
-				self.config.model_trainer.Params('Balanced RFC', [42], [100, 200, 300, 400], [1, 2, 3, 4], [], []),
-				self.config.model_trainer.Params('Balanced Bagging Classifer', [], [150], [], [0.8, 0.85], [False]),
-				self.config.model_trainer.Params('Easy Ensemble Classifer', [34], [200], [], [0.75], [False]),
-			]
-			# params = {
-			# 	'Balanced RFC' : {
-			# 		"random_state": [42],
-			# 		"n_estimators": [100, 200, 300, 400],
-			# 		"max_depth": [1, 2, 3, 4],
-			#
-			# 	},
-			# 	'Balanced Bagging Classifer': {
-			#         "n_estimators" : [150],
-			#         "sampling_strategy" : [0.8,0.85],
-			#         "replacement" :[ False],
-			# 	},
-			# 	'Easy Ensemble Classifer': {
-			# 		"random_state": [34],
-			# 		"n_estimators": [200],
-			# 		"sampling_strategy": [0.75],
-			# 		"replacement": [ False]
-			#
-			# 	}
-			# }
+			# params = [
+			# 	self.config.model_trainer.Params('Balanced RFC', [42], [100, 200, 300, 400], [1, 2, 3, 4], [], []),
+			# 	self.config.model_trainer.Params('Balanced Bagging Classifer', [], [150], [], [0.8, 0.85], [False]),
+			# 	self.config.model_trainer.Params('Easy Ensemble Classifer', [34], [200], [], [0.75], [False]),
+			# ]
+			params = {
+				'Balanced RFC' : {
+					"random_state": [42],
+					"n_estimators": [100, 200, 300, 400],
+					"max_depth": [1, 2, 3, 4],
 
+				},
+				'Balanced Bagging Classifer': {
+			        "n_estimators" : [150],
+			        "sampling_strategy" : [0.8,0.85],
+			        "replacement" :[ False],
+				},
+				'Easy Ensemble Classifer': {
+					"random_state": [34],
+					"n_estimators": [200],
+					"sampling_strategy": [0.75],
+					"replacement": [ False]
+
+				}
+			}
+			cv = self.config.model_trainer.cv
 			model_report: dict = evaluate_models(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test,
-			                                     models=models, param=params)
+			                                     models=models, param=params, cv=cv)
 
 			## To get best model score from dict
 			best_model_score = max(sorted(model_report.values()))

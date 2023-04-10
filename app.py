@@ -5,14 +5,7 @@ import sys
 from src.exception import CustomException
 from src.logger import logging
 from src.pipeline.predict_pipeline import PredictPipeline
-from dataclasses import dataclass
-
-@dataclass
-class StreamlitConfig:
-    bg_url = "https://cdn.pixabay.com/photo/2020/04/20/04/02/brick-5066282_960_720.jpg"
-    title = "Insurance Fraud Detection"
-    files_dir = os.path.join(os.getcwd(), "artifacts", "predict_files")
-
+from cfg.config import StreamlitConfig
 
 class Streamlit:
     def __init__(self):
@@ -94,5 +87,4 @@ class Streamlit:
 if __name__ == "__main__":
     obj = Streamlit()
     obj.add_bg_from_url()
-    # obj.display_info()
     obj.content_on_page()

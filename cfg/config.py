@@ -1,5 +1,13 @@
 from dataclasses import dataclass, field
 from typing import List
+import os
+
+@dataclass
+class StreamlitConfig:
+    bg_url : str =  "https://cdn.pixabay.com/photo/2020/04/20/04/02/brick-5066282_960_720.jpg"
+    title : str = "Insurance Fraud Detection"
+    files_dir : str = os.path.join(os.getcwd(), "artifacts", "predict_files")
+
 
 @dataclass(frozen=True)
 class DataIngestionConfig:
@@ -45,16 +53,8 @@ class DataTransformationConfig:
 @dataclass(frozen=True)
 class ModelTrainerConfig:
     best_model_score_threshold: float = 0.56
+    cv: int = 5
 
-    @dataclass
-    class Params:
-        """Class representing parameters for different classifiers."""
-        name: str
-        random_state: List[int]
-        n_estimators: List[int]
-        max_depth: List[int]
-        sampling_strategy: List[float]
-        replacement: List[bool]
 
 @dataclass(frozen=True)
 class Config:

@@ -135,3 +135,8 @@ Data/
 ./artifacts/prediction_preprocessed.csv
 artifacts/prediction_preprocessed.csv
 
+artifacts/test.csv
+artifacts/test_preprocessed.csv
+artifacts/train.csv
+artifacts/train_preprocessed.csv
+artifacts/data_copy.csv

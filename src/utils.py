@@ -41,7 +41,7 @@ def save_object(file_path, obj):
         raise CustomException(e, sys)
 
 
-def evaluate_models(X_train, y_train, X_test, y_test, models, param):
+def evaluate_models(X_train, y_train, X_test, y_test, models, param, cv):
     try:
         report = {}
 
@@ -49,7 +49,7 @@ def evaluate_models(X_train, y_train, X_test, y_test, models, param):
             model = list(models.values())[i]
             para = param[list(models.keys())[i]]
 
-            gs = GridSearchCV(model, para, cv=5)
+            gs = GridSearchCV(model, para, cv=cv)
             gs.fit(X_train, y_train)
 
             model.set_params(**gs.best_params_)
