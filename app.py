@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 import sys
-
+from pathlib import Path
 from src.exception import CustomException
 from src.logger import logging
 from src.pipeline.predict_pipeline import PredictPipeline
@@ -59,15 +59,15 @@ class Streamlit:
             choice = col1.radio(("Choose From Below Options: "), ["Show Available Files", "Upload Own File Here"])
 
             if choice == "Show Available Files":
-
-                list_file_dir = os.listdir(self.streamlit_config.files_dir)
+                files_dir =  Path(self.streamlit_config.artifacts_dir) / self.streamlit_config.files_dir
+                list_file_dir = os.listdir(files_dir)
 
                 chosen_file = col2.radio("\n Choose From Below Options: ", list_file_dir)
 
                 st.subheader(f"PREDICTED --- :orange[{chosen_file}]")
 
-                pred_file_path = os.path.join(self.streamlit_config.files_dir, chosen_file)
-
+                pred_file_path = files_dir / Path(chosen_file)
+                print(pred_file_path)
                 pred = PredictPipeline()
                 res = pred.initiate_predict_pipeline(pred_file_path)
 

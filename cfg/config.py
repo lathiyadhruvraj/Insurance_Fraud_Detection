@@ -1,13 +1,15 @@
 from dataclasses import dataclass, field
 from typing import List
+from typing import Dict
+
 import os
 
 @dataclass
 class StreamlitConfig:
     bg_url : str =  "https://cdn.pixabay.com/photo/2020/04/20/04/02/brick-5066282_960_720.jpg"
     title : str = "Insurance Fraud Detection"
-    files_dir : str = os.path.join(os.getcwd(), "artifacts", "predict_files")
-
+    files_dir : str = "predict_files"
+    artifacts_dir: str = 'artifacts'
 
 @dataclass(frozen=True)
 class DataIngestionConfig:
@@ -42,13 +44,13 @@ class DataTransformationConfig:
 
     @dataclass
     class CategoricalFeatureMap:
-        policy_csl: dict[str, float] = field(default_factory=lambda: {'100/300': 1, '250/500': 2.5, '500/1000': 5})
-        insured_education_level: dict[str, int] = field(default_factory=lambda: {'JD': 1, 'High School': 2, 'College': 3, 'Masters': 4, 'Associate': 5, 'MD': 6, 'PhD': 7})
-        incident_severity: dict[str, int] = field(default_factory=lambda: {'Trivial Damage': 1, 'Minor Damage': 2, 'Major Damage': 3, 'Total Loss': 4})
-        insured_sex: dict[str, int] = field(default_factory=lambda: {'FEMALE': 0, 'MALE': 1})
-        property_damage: dict[str, int] = field(default_factory=lambda: {'NO': 0, 'YES': 1})
-        police_report_available: dict[str, int] = field(default_factory=lambda: {'NO': 0, 'YES': 1})
-        fraud_reported: dict[str, int] = field(default_factory=lambda: {'N': 0, 'Y': 1})
+        policy_csl: Dict[str, float] = field(default_factory=lambda: {'100/300': 1, '250/500': 2.5, '500/1000': 5})
+        insured_education_level: Dict[str, int] = field(default_factory=lambda: {'JD': 1, 'High School': 2, 'College': 3, 'Masters': 4, 'Associate': 5, 'MD': 6, 'PhD': 7})
+        incident_severity: Dict[str, int] = field(default_factory=lambda: {'Trivial Damage': 1, 'Minor Damage': 2, 'Major Damage': 3, 'Total Loss': 4})
+        insured_sex: Dict[str, int] = field(default_factory=lambda: {'FEMALE': 0, 'MALE': 1})
+        property_damage: Dict[str, int] = field(default_factory=lambda: {'NO': 0, 'YES': 1})
+        police_report_available: Dict[str, int] = field(default_factory=lambda: {'NO': 0, 'YES': 1})
+        fraud_reported: Dict[str, int] = field(default_factory=lambda: {'N': 0, 'Y': 1})
 
 @dataclass(frozen=True)
 class ModelTrainerConfig:

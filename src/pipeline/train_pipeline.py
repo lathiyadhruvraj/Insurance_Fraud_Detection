@@ -3,7 +3,6 @@ from src.components.data_transformation import DataTransformation
 from src.components.model_trainer import ModelTrainer
 from src.exception import CustomException
 from src.logger import logging
-from pathlib import Path
 import sys
 
 
@@ -12,23 +11,12 @@ class TrainPipeline:
     A class that defines the training pipeline.
     """
 
-    # def __init__(self, config_path: Path, paths_path: Path):
-    #     """
-    #     Initializes the TrainPipeline object.
-    #
-    #     Args:
-    #     - config_path (Path): The path to the configuration file.
-    #     - paths_path (Path): The path to the paths file.
-    #     """
-    #     self.config_path = config_path
-    #     self.paths_path = paths_path
-
     def initiate_train_pipeline(self):
         """
         Initiates the training pipeline.
         """
         try:
-            print("Trainig Started")
+            print("Training Started")
             logging.info("Training Pipeline started")
 
             logging.info("Ingestion Started")

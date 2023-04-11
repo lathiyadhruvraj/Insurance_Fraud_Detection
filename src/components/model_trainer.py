@@ -23,7 +23,6 @@ class ModelTrainer:
 	def __init__(self):
 		self.config = Config()
 		self.paths = Paths()
-		self.root = Path(__file__).parent.parent.parent.resolve()
 
 	def split_the_data_X_y(self, df):
 		X = df.drop(columns=['fraud_reported_Y'])
@@ -49,39 +48,31 @@ class ModelTrainer:
 				'Easy Ensemble Classifer': EasyEnsembleClassifier(),
 
 			}
-			# params = [
-			# 	self.config.model_trainer.Params('Balanced RFC', [42], [100, 200, 300, 400], [1, 2, 3, 4], [], []),
-			# 	self.config.model_trainer.Params('Balanced Bagging Classifer', [], [150], [], [0.8, 0.85], [False]),
-			# 	self.config.model_trainer.Params('Easy Ensemble Classifer', [34], [200], [], [0.75], [False]),
-			# ]
+
 			params = {
-				'Balanced RFC' : {
+				'Balanced RFC': {
 					"random_state": [42],
 					"n_estimators": [100, 200, 300, 400],
 					"max_depth": [1, 2, 3, 4],
 
 				},
 				'Balanced Bagging Classifer': {
-			        "n_estimators" : [150],
-			        "sampling_strategy" : [0.8,0.85],
-			        "replacement" :[ False],
+					"n_estimators": [150],
+					"sampling_strategy": [0.8, 0.85],
+					"replacement": [ False]
 				},
 				'Easy Ensemble Classifer': {
 					"random_state": [34],
 					"n_estimators": [200],
 					"sampling_strategy": [0.75],
-					"replacement": [ False]
+					"replacement": [False]
 
 				}
 			}
 			cv = self.config.model_trainer.cv
-			model_report: dict = evaluate_models(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test,
-			                                     models=models, param=params, cv=cv)
+			model_report: dict = evaluate_models(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, models=models, param=params, cv=cv)
 
-			## To get best model score from dict
 			best_model_score = max(sorted(model_report.values()))
-
-			## To get best model name from dict
 
 			best_model_name = list(model_report.keys())[
 				list(model_report.values()).index(best_model_score)
@@ -89,28 +80,18 @@ class ModelTrainer:
 			best_model = models[best_model_name]
 
 			if best_model_score < self.config.model_trainer.best_model_score_threshold:
-				raise CustomException( 'No best model found')
+				raise CustomException('No best model found', "")
 			logging.info(f'Best model {best_model} found on both training and testing dataset')
-
 
 			artifacts_dir = self.paths.artifacts_dir
 			trained_model_fname = self.paths.model_trainer.trained_model_fname
-			trained_model_path = self.root / artifacts_dir / trained_model_fname
+			trained_model_path = Path("..") / ".." / artifacts_dir / trained_model_fname
 
-			save_object(
-				file_path=trained_model_path,
-				obj=best_model
-			)
-
+			save_object(file_path=trained_model_path, obj=best_model)
 			predicted = best_model.predict(X_test)
-
 			roc_auc = roc_auc_score(y_test, predicted)
 			return roc_auc, trained_model_path
 
 		except Exception as e:
 			logging.exception(e)
 			raise CustomException(e, sys)
-
-# if __name__ == '__main__' :
-# 	trner = ModelTrainer()
-# 	trner.initiate_model_trainer()
